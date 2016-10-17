@@ -1,0 +1,197 @@
+#!/bin/tcsh -f
+
+#
+#	Initialise values
+#
+set name_protocol = ()
+set nifti_file_name = ()
+set targetDir = ()
+set PrintHelp = 0
+
+if ( $#argv == 0 ) goto usage_exit;
+
+set n = `echo "$argv" | grep -e -help | wc -l` 
+if ( $n != 0 ) then
+	set PrintHelp = 1
+	goto usage_exit
+endif
+
+goto parse_args
+parse_args_return:
+
+goto check_params
+check_params_return:
+
+if ( ! -d ${targetDir} ) then
+	echo "Error: target directory $targetDir does not exist"
+	exit 1
+endif
+
+#set temp_nifti_dir = /var/tmp/temp_dir$$
+set temp_nifti_dir = temp_dir$$
+mkdir -p $temp_nifti_dir
+
+#
+#	Loop through subjects
+#
+@ nth = 0
+set subject_list = `ls`
+foreach subject ( $subject_list )
+
+	if ( ${subject} == ${temp_nifti_dir} ) then
+		continue
+	endif
+	set n = `echo "$subject" | grep -e native_ | wc -l`
+	if ( $n == 1 ) then
+		continue
+	endif
+
+	echo
+	echo $subject
+
+	set found_dir = ()
+	set dir_list = `ls $subject`
+	foreach dir ($dir_list )
+		if ( -f $dir ) then
+			continue
+		endif
+
+#echo "dir = $dir"
+
+		set n = `echo "$dir" | grep -e $name_protocol | wc -l`
+		if ( $n == 1 ) then
+			set found_dir = $dir
+			break;
+		endif
+	end
+
+#echo "found_dir = $found_dir"
+
+	if ( $#found_dir == 0 ) then
+		echo "Warning: requested directory does not exist for subject $subject"
+		continue
+	endif
+
+#continue
+
+	dcm2nii -o ${temp_nifti_dir} ${subject}/${found_dir}
+	mv ${temp_nifti_dir}/*.nii.gz ${targetDir}/${subject}_${nifti_file_name}
+
+	fslinfo ${targetDir}/${subject}_${nifti_file_name}
+
+#exit 1
+end
+
+rm -d ${temp_nifti_dir}
+
+echo "Finished"
+issue_beep
+
+date
+
+exit 0
+
+###############################################
+
+############--------------##################
+parse_args:
+set cmdline = ($argv)
+while ( $#argv != 0 )
+
+	set flag = $argv[1]; shift
+  
+	switch( $flag )
+
+		case "-scan_protocol":
+			if ( $#argv < 1 ) goto arg1err
+			set name_protocol = "$argv[1]"; shift
+		breaksw
+
+		case "-name":
+			if ( $#argv < 1 ) goto arg1err
+			set nifti_file_name = "$argv[1]"; shift
+		breaksw
+
+		case "-targ":
+			if ( $#argv < 1 ) goto arg1err
+			set targetDir = "$argv[1]"; shift
+		breaksw
+
+		default:
+			echo ERROR: Flag $flag unrecognised. 
+			echo $cmdline
+			exit 1
+		breaksw
+
+	endsw
+
+end
+
+goto parse_args_return
+
+############--------------##################
+
+############--------------##################
+check_params:
+
+if ( $#name_protocol == 0 ) then
+	echo "ERROR: must specify name of scan protocol"
+	exit 1
+endif
+
+if ( $#nifti_file_name == 0 ) then
+	echo "ERROR: must specify name of converted nifti"
+	exit 1
+endif
+
+if ( $#targetDir == 0 ) then
+	echo "ERROR: must specify name of target directory"
+	exit 1
+endif
+
+goto check_params_return
+############--------------##################
+
+############--------------##################
+arg1err:
+	echo "ERROR: flag $flag requires one argument"
+	exit 1
+############--------------##################
+
+############--------------##################
+arg2err:
+	echo "ERROR: flag $flag requires two arguments"
+	exit 1
+############--------------##################
+
+############--------------##################
+usage_exit:
+	set tool_name = `basename $0`
+	echo ""
+	echo "$tool_name"
+	echo ""
+	echo "Working directory should be directory which holds the subject directories containing the DICOM directories"
+	echo ""
+	echo "Required Arguments:";
+	echo "   -scan_protocol <name of scan protocol> : name of scan protocol which should be prersent in name of DICOM directory"
+	echo "   -name <file name> : name of converted NIFTI file (subject name will be included at start of each name)"
+	echo "   -targ targetdir : name of directory to which the nifti file will be written"
+	echo ""
+	echo "Other Arguments"
+	echo "   -help"
+	echo ""
+
+	if (! $PrintHelp ) exit 1
+
+	cat $0 | awk 'BEGIN{prt=0}{if(prt) print $0; if($1 == "BEGINHELP") prt = 1 }'
+
+exit 1
+
+
+#---- Everything below here is printed out as part of help -----#
+BEGINHELP
+
+Tool to convert DICOM directory to named NIFTI file for all subjects.
+Used is dcm2nii to convert dicom files to NIFTI
+
+

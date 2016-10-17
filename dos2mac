@@ -1,0 +1,8 @@
+#!/bin/sh
+# convert DOS line endings (CR LF) to Mac (CR)
+while [ $# -gt "0" ]
+do
+tr '\r\n' '\r\0' < "$1" | tr -d '\0' > "$1.mac"
+shift
+done
+

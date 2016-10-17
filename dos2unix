@@ -1,0 +1,8 @@
+#!/bin/sh
+# convert DOS line endings (CR LF) to UNIX (LF)
+while [ $# -gt "0" ]
+do
+tr '\r\n' '\n\0' < "$1" | tr -d '\0' > "$1.unix"
+shift
+done
+

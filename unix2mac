@@ -1,0 +1,8 @@
+#!/bin/sh
+# convert UNIX line endings (LF) to Mac (CR)
+while [ $# -gt "0" ]
+do
+tr '\n' '\r' < "$1" > "$1.mac"
+shift
+done
+

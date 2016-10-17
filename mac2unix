@@ -1,0 +1,8 @@
+#!/bin/sh
+# convert Mac line endings (CR) to UNIX (LF)
+while [ $# -gt "0" ]
+do
+tr '\r' '\n' < "$1" > "$1.unix"
+shift
+done
+
