@@ -10,3 +10,6 @@ Scripts for converting files
 - mac2unix to convert Osx generated .txt file to Unix compatible file
 
 Python scripts for processing in FSL.
+
+# FSL 7T BIDS fMRI processing script
+- BIDS_fmri_preproc.sh (note; needs editing)
