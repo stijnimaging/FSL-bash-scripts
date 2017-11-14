@@ -1,0 +1,38 @@
+#!/bin/bash -p
+
+if [ $# -eq 1 ]; then
+
+	export PATH=$OUR_BASIC_PATH
+	if [ $1 -eq 416 ];then
+		FSL_version=4.1.6
+	elif [ $1 -eq 419 ];then
+		FSL_version=4.1.9
+	elif [ $1 -eq 504 ];then
+		FSL_version=5.0.4
+	elif [ $1 -eq 507 ];then
+	    FSL_version=5.0.7
+	elif [ $1 -eq 5010 ];then
+	    FSL_version=5.0.10
+	else
+		FSL_version=""
+	fi
+
+	if [ ! -z $FSL_version ]; then
+		FSLDIR=/usr/local/fsl${FSL_version}; export FSLDIR; . ${FSLDIR}/etc/fslconf/fsl.sh; PATH=${FSLDIR}/bin:$PATH; export PATH; echo $FSLDIR
+
+		if [ ! -z $FREESURFER_HOME ]; then
+			FS_OVERRIDE=1; source $FREESURFER_HOME/setUpFreeSurfer.sh
+		fi
+	else
+		if [ ! -z $FREESURFER_HOME ]; then
+			FS_OVERRIDE=1; source $FREESURFER_HOME/setUpFreeSurfer.sh
+		fi
+
+		echo
+		echo "******** ERROR: Unknown FSL version supplied (only 416, 419 and 504 are valid) *********"
+		echo
+	fi
+
+else
+	echo "Need one argument (FSL version, e.g., 504)"
+fi

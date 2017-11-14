@@ -1,0 +1,36 @@
+#!/bin/bash -p
+
+if [ $# -eq 1 ]; then
+
+	export PATH=$OUR_BASIC_PATH
+
+	if [ ! -z $FSLDIR ]; then
+		export PATH=${FSLDIR}/bin:$PATH
+	fi
+
+	if [ $1 -eq 43 ]; then
+		FS_version=v4.3.0
+	elif [ $1 -eq 45 ]; then
+		FS_version=v4.5.0
+	elif [ $1 -eq 50 ]; then
+		FS_version=v5.0.0
+	elif [ $1 -eq 51 ]; then
+		FS_version=v5.1.0
+	elif [ $1 -eq 53 ]; then
+		FS_version=v5.3.0
+	elif [ $1 -eq 60 ]; then
+		FS_version=v6.0.0
+	else
+		echo
+		echo "******** ERROR: Unknown FS version supplied (only 43, 45, 50, 51, 53 and 60 are valid) *********"
+		echo
+		FS_version=""
+	fi
+
+	if [ ! -z $FS_version ]; then
+		FS_OVERRIDE=1; export FREESURFER_HOME=/Applications/freesurfer${FS_version}; source $FREESURFER_HOME/setUpFreeSurfer.sh
+	fi
+
+else
+	echo "Need one argument (FS version, e.g., 53)"
+fi
